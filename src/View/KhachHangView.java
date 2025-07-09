@@ -24,21 +24,8 @@ public class KhachHangView extends JPanel {
     private JButton btnReset, btnThem, btnSua, btnXoa, btnTim;
 
     public KhachHangView() {
-        setLookAndFeel("Windows");
         initGUI();
         addEvents();
-    }
-
-    private void setLookAndFeel(String name) {
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if (name.equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception ignored) {
-        }
     }
 
     private void initGUI() {
@@ -96,7 +83,7 @@ public class KhachHangView extends JPanel {
         txtTukhoa = new JTextField(10);
         txtMinchiTieu = new JTextField(6);
         txtMaxChiTieu = new JTextField(6);
-        btnTim = new JButton("Tìm", new ImageIcon("image/Search-icon.png"));
+        btnTim = new JButton("Tìm", new ImageIcon(getClass().getResource("/picture/Search-icon.png")));
 
         pnSearch.add(new JLabel("Từ khóa:"));
         pnSearch.add(txtTukhoa);
@@ -108,10 +95,10 @@ public class KhachHangView extends JPanel {
 
         JPanel pnButton = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
         pnButton.setBackground(Color.WHITE);
-        btnThem = new JButton("Thêm", new ImageIcon("image/add-icon.png"));
-        btnSua = new JButton("Sửa", new ImageIcon("image/Pencil-icon.png"));
-        btnXoa = new JButton("Xóa", new ImageIcon("image/delete-icon.png"));
-        btnReset = new JButton("Làm mới", new ImageIcon("image/Refresh-icon.png"));
+        btnThem = new JButton("Thêm", new ImageIcon(getClass().getResource("/picture/add-icon.png")));
+        btnSua = new JButton("Sửa", new ImageIcon(getClass().getResource("/picture/Pencil-icon.png")));
+        btnXoa = new JButton("Xóa", new ImageIcon(getClass().getResource("/picture/delete-icon.png")));
+        btnReset = new JButton("Làm mới", new ImageIcon(getClass().getResource("/picture/Refresh-icon.png")));
 
         for (JButton btn : new JButton[]{btnThem, btnSua, btnXoa, btnReset}) {
             btn.setFont(font);
@@ -219,16 +206,18 @@ public class KhachHangView extends JPanel {
     }
 
     private void loadDataLenTableKhachHang(ArrayList<KhachHang> dskh) {
-        dtmKhachHang.setRowCount(0);
+        dtmKhachHang.setRowCount(0); 
         DecimalFormat dcf = new DecimalFormat("###,###");
+
         for (KhachHang kh : dskh) {
-            Vector<Object> vec = new Vector<>();
-            vec.add(kh.getMaKH());
-            vec.add(kh.getHoTen());
-            vec.add(kh.getGioiTinh());
-            vec.add(dcf.format(kh.getTongChiTieu()));
-            vec.add(kh.getSdt());
-            dtmKhachHang.addRow(vec);
+            Object[] rowData = {
+                kh.getMaKH(),
+                kh.getHoTen(),
+                kh.getGioiTinh(),
+                dcf.format(kh.getTongChiTieu()),
+                kh.getSdt()
+            };
+            dtmKhachHang.addRow(rowData);  
         }
     }
 

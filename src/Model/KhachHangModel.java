@@ -12,18 +12,19 @@ public class KhachHangModel {
 
     public ArrayList<KhachHang> getListKhachHang() {
         ArrayList<KhachHang> list = new ArrayList<>();
-        try (Connection conn = myConn.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM khachhang WHERE TinhTrang=1");
-             ResultSet rs = ps.executeQuery()) {
-
+        try (Connection conn = myConn.getConnection()) {
+            String sql = "SELECT * FROM KhachHang";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(new KhachHang(
+                KhachHang kh = new KhachHang(
                         rs.getInt("MaKH"),
                         rs.getString("HoTen"),
                         rs.getString("GioiTinh"),
                         rs.getInt("TongChiTieu"),
-                        rs.getString("SDT")
-                ));
+                        rs.getString("Sdt")
+                );
+                list.add(kh);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -32,10 +33,8 @@ public class KhachHangModel {
     }
 
     public boolean addKhachHang(KhachHang kh) {
-        try (Connection conn = myConn.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                     "INSERT INTO khachhang(HoTen, GioiTinh, TongChiTieu, TinhTrang, SDT) VALUES (?, ?, ?, 1, ?)")
-        ) {
+        try (Connection conn = myConn.getConnection(); PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO khachhang(HoTen, GioiTinh, TongChiTieu, SDT) VALUES (?, ?, ?,  ?)")) {
             ps.setString(1, kh.getHoTen());
             ps.setString(2, kh.getGioiTinh());
             ps.setFloat(3, kh.getTongChiTieu());
@@ -48,10 +47,8 @@ public class KhachHangModel {
     }
 
     public boolean updateKhachHang(int maKH, KhachHang kh) {
-        try (Connection conn = myConn.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                     "UPDATE khachhang SET HoTen=?, GioiTinh=?, SDT=? WHERE MaKH=?")
-        ) {
+        try (Connection conn = myConn.getConnection(); PreparedStatement ps = conn.prepareStatement(
+                "UPDATE khachhang SET HoTen=?, GioiTinh=?, SDT=? WHERE MaKH=?")) {
             ps.setString(1, kh.getHoTen());
             ps.setString(2, kh.getGioiTinh());
             ps.setString(3, kh.getSdt());
@@ -64,10 +61,8 @@ public class KhachHangModel {
     }
 
     public boolean deleteKhachHang(int maKH) {
-        try (Connection conn = myConn.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                     "UPDATE khachhang SET TinhTrang=0 WHERE MaKH=?")
-        ) {
+        try (Connection conn = myConn.getConnection(); PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM khachhang WHERE MaKH=?")) {
             ps.setInt(1, maKH);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -75,7 +70,7 @@ public class KhachHangModel {
             return false;
         }
     }
-    
+
     public KhachHang findKhachHangBySdt(String sdt) {
         KhachHang result = null;
         try {

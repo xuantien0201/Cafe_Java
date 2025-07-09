@@ -13,30 +13,63 @@ public class HoaDonModel {
     private MyConnection myConn = new MyConnection();
 
     public boolean themHoaDon(HoaDon hd) {
-        String sql = "INSERT INTO hoadon (ngayLap, gioVao, gioRa, nguoiLap, danhSachSanPham, soLuongSanPham,"
-                + " tongTien, khuyenMai, tongTienThuc, loaiDon, khachHang) " +
-                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        final String insertSql =
+            "INSERT INTO hoadon (ngayLap, gioVao, gioRa, nguoiLap, danhSachSanPham," +
+            " soLuongSanPham, tongTien, khuyenMai, tongTienThuc, loaiDon, khachHang) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = myConn.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        final String updateSql =
+            "UPDATE khachhang SET TongChiTieu = (" +
+            " SELECT IFNULL(SUM(tongTienThuc), 0) FROM hoadon WHERE khachHang = ?" +
+            ") WHERE MaKH = ?";
 
-            ps.setDate(1, new java.sql.Date(hd.getNgayLap().getTime()));
-            ps.setString(2, hd.getGioVao());
-            ps.setString(3, hd.getGioRa());
-            ps.setString(4, hd.getNguoiLap());
-            ps.setString(5, hd.getDanhSachSanPham());
-            ps.setString(6, hd.getSoLuongSanPham());
-            ps.setDouble(7, hd.getTongTien());
-            ps.setDouble(8, hd.getKhuyenMai());
-            ps.setDouble(9, hd.getTongTienThuc());
-            ps.setString(10, hd.getLoaiDon()); // ✅ thêm
-            ps.setInt(11, hd.getKhachHang());
+        try (Connection conn = myConn.getConnection()) {
+            conn.setAutoCommit(false);
 
-            return ps.executeUpdate() > 0;
+            try (PreparedStatement psInsert = conn.prepareStatement(insertSql);
+                 PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+
+                // luu hoa don
+                psInsert.setDate   (1, new java.sql.Date(hd.getNgayLap().getTime()));
+                psInsert.setString (2, hd.getGioVao());
+                psInsert.setString (3, hd.getGioRa());
+                psInsert.setString (4, hd.getNguoiLap());
+                psInsert.setString (5, hd.getDanhSachSanPham());
+                psInsert.setString (6, hd.getSoLuongSanPham());
+                psInsert.setDouble (7, hd.getTongTien());
+                psInsert.setDouble (8, hd.getKhuyenMai());
+                psInsert.setDouble (9, hd.getTongTienThuc());
+                psInsert.setString (10, hd.getLoaiDon());
+                psInsert.setInt    (11, hd.getKhachHang());
+
+                int rowHoadon = psInsert.executeUpdate();
+                if (rowHoadon == 0) {
+                    conn.rollback();
+                    return false;                       // chèn hóa đơn thất bại
+                }
+
+                // update tong chi tieu khach hang
+                psUpdate.setDouble(1, hd.getTongTienThuc());
+                psUpdate.setInt   (2, hd.getKhachHang());
+
+                int rowKh = psUpdate.executeUpdate();
+                if (rowKh == 0) {                       // không tìm thấy MaKH phù hợp
+                    conn.rollback();
+                    return false;
+                }
+                conn.commit();
+                return true;
+
+            } catch (SQLException ex) {
+                conn.rollback();                       // có lỗi, hủy giao dịch
+                ex.printStackTrace();
+            } finally {
+                conn.setAutoCommit(true);              // trả lại trạng thái mặc định
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return false;
     }
 }

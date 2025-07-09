@@ -23,22 +23,10 @@ public class KhuyenMaiView extends JPanel {
     private JButton btnReset, btnThem, btnSua, btnXoa;
 
     public KhuyenMaiView() {
-        setLookAndFeel("Windows");
         initGUI();
         addEvents();
     }
-
-    private void setLookAndFeel(String name) {
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if (name.equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception ignored) {}
-    }
-
+    
     private void initGUI() {
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
